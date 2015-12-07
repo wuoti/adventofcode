@@ -18,20 +18,20 @@ def setBrightness(ls: Seq[collection.mutable.Seq[Int]], x1: Int, y1: Int, x2: In
   y <- y1 to y2 
 } ls(x)(y) = if (cmd == toggleCmd) ls(x)(y) + 2 else if (cmd == turnOnCmd) ls(x)(y) + 1 else Math.max(0, ls(x)(y) - 1)
 
-cmds.foreach {c => 
-  val cmd = c.takeWhile(!_.isDigit).dropRight(1)
-  val (x1, y1, x2, y2) = c.stripPrefix(cmd + " ").split(' ') match {
-    case Array(coord1, _, coord2) => {
-      val p = (s: String) => s.split(',') match { case Array(x, y) => (x.toInt, y.toInt) }
-      val (x1, y1) = p(coord1)
-      val (x2, y2) = p(coord2)
-      (x1, y1, x2, y2)
-    }
+val turnOnR = """turn on (\d+),(\d+) through (\d+),(\d+)""".r
+val turnOffR = """turn off (\d+),(\d+) through (\d+),(\d+)""".r
+val toggleR = """toggle (\d+),(\d+) through (\d+),(\d+)""".r
+
+cmds.foreach { c => 
+  val (cmd, x1, y1, x2, y2) = c match {
+    case turnOnR(x1, y1, x2, y2) => (turnOnCmd, x1.toInt, y1.toInt, x2.toInt, y2.toInt)
+    case turnOffR(x1, y1, x2, y2) => (turnOffCmd, x1.toInt, y1.toInt, x2.toInt, y2.toInt)
+    case toggleR(x1, y1, x2, y2) => (toggleCmd, x1.toInt, y1.toInt, x2.toInt, y2.toInt)
   }
   
   switchLights(lights, x1, y1, x2, y2, cmd)
   setBrightness(lights2, x1, y1, x2, y2, cmd)
 }
 
-println(s"Number of lights turned on: ${lights.flatten.count(_ == true)}")
+println(s"Number of lights turned on: ${lights.flatten.count(b => b)}")
 println(s"Total brightness of all lights combined: ${lights2.flatten.sum}")
